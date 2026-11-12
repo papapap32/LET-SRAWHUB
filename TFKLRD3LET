@@ -1,1 +1,3034 @@
+local players = game:GetService("Players")
+local coreGui = game:GetService("CoreGui")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local workspaceService = game:GetService("Workspace")
+local virtualInputManager = game:GetService("VirtualInputManager")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local textChatService = game:GetService("TextChatService")
+local localPlayer = players.LocalPlayer
 
+local ok2, result2 = pcall(function()
+  return loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+end)
+
+if not ok2 or not result2 then
+  warn("TFK HUB Rayfield failed to load:", result2)
+  return
+end
+
+local window = result2:CreateWindow({
+  Name = "TFK HUB ",
+  Icon = 0,
+  LoadingTitle = "LOADING TFK HUB ",
+  LoadingSubtitle = "Loading TFK hub JOIN",
+  ShowText = "TFK",
+  Theme = "Default",
+  ToggleUIKeybind = "K",
+  ConfigurationSaving = { Enabled = false },
+  KeySystem = false,
+})
+
+local v2 = {
+  titleText = "TFK HUB",
+  titleColor = Color3.fromRGB(180, 100, 255),
+  showTitle = true,
+  rgbEnabled = false,
+  rgbSpeed = 1,
+  blackWhiteEnabled = false,
+  blackWhiteSpeed = 2,
+  showHP = true,
+  hpColor = Color3.fromRGB(255, 75, 75),
+  tpWalkEnabled = false,
+  tpWalkSpeed = 1,
+  followEnabled = false,
+  followTarget = "",
+  followDistance = 5,
+  orbitEnabled = false,
+  orbitTarget = "",
+  orbitDistance = 5,
+  orbitSpeed = 2,
+  hitTPEnabled = false,
+  hitTPPosition = Vector3.new(0, 10, 0),
+  hitTPDelay = 1,
+  antiGrabEnabled = false,
+  antiGrabDelay = 0.2,
+  noSlowEnabled = false,
+  antiRagdollEnabled = false,
+  hitboxAuraEnabled = false,
+  hitboxSize = 10,
+  hitboxDistance = 28,
+  autoBlockEnabled = false,
+  autoClickerEnabled = false,
+  rushEnabled = false,
+  rushTarget = "",
+  autoKillTPEnabled = false,
+  autoKillTarget = "",
+  autoFarmPosition = "Front",
+}
+
+local function f1(p1)
+  if not p1 or p1 == "" then
+    return nil
+  end
+
+  local lower = string.lower(p1)
+
+  for _, value in ipairs(players:GetPlayers()) do
+    if string.lower(value.Name) == lower or string.lower(value.DisplayName) == lower then
+      return value
+    end
+  end
+
+  return nil
+end
+
+local v3 = {}
+local map = {}
+local total = 0
+local TFKHPInfo
+
+local function f2()
+  if TFKHPInfo then
+    TFKHPInfo:Destroy()
+    TFKHPInfo = nil
+  end
+end
+
+local function f3(title, content, p2)
+  result2:Notify({ Title = title, Content = content, Duration = p2 or 3 })
+end
+
+local f4
+
+local function getHumanoid(character)
+  local instance = character or f4()
+  return instance and instance:FindFirstChildOfClass("Humanoid")
+end
+
+function f4()
+  return localPlayer.Character
+end
+
+local function getHumanoidRootPart(character2)
+  local instance2 = character2 or f4()
+  return instance2 and instance2:FindFirstChild("HumanoidRootPart")
+end
+
+local TFKCustomTitle, titleText
+
+local function f5()
+  if TFKCustomTitle then
+    TFKCustomTitle:Destroy()
+    TFKCustomTitle = nil
+    titleText = nil
+  end
+end
+
+local f6
+
+local function f7(p3)
+  local v4 = f1(p3)
+
+  if v4 and v4 ~= localPlayer then
+    return v4.Character
+  end
+
+  return f6(p3)
+end
+
+function f6(p4)
+  if not p4 or p4 == "" then
+    return nil
+  end
+
+  local npCs = workspaceService:FindFirstChild("NPCs")
+
+  if not npCs then
+    return nil
+  end
+
+  local lower2 = string.lower(p4)
+
+  for _, value2 in ipairs(npCs:GetChildren()) do
+    if value2:IsA("Model") and string.lower(value2.Name) == lower2 then
+      return value2
+    end
+  end
+
+  return nil
+end
+
+local function makeTextLabel()
+  local instance3 = f4()
+  local head = instance3 and instance3:FindFirstChild("Head")
+
+  if not v2.showTitle or not head or v2.titleText == "" then
+    f5()
+    return
+  end
+
+  if not TFKCustomTitle or TFKCustomTitle.Parent ~= head then
+    f5()
+
+    TFKCustomTitle = Instance.new("BillboardGui")
+    TFKCustomTitle.Name = "TFKCustomTitle"
+    TFKCustomTitle.Size = UDim2.fromOffset(250, 48)
+    TFKCustomTitle.StudsOffset = Vector3.new(0, 2.7, 0)
+    TFKCustomTitle.AlwaysOnTop = true
+    TFKCustomTitle.MaxDistance = 250
+    TFKCustomTitle.Parent = head
+
+    titleText = Instance.new("TextLabel")
+    titleText.Name = "TitleText"
+    titleText.Size = UDim2.fromScale(1, 1)
+    titleText.BackgroundTransparency = 1
+    titleText.Font = Enum.Font.GothamBold
+    titleText.TextScaled = true
+    titleText.TextStrokeTransparency = 0.25
+    titleText.Parent = TFKCustomTitle
+  end
+
+  if titleText then
+    titleText.Text = v2.titleText
+    titleText.TextColor3 = v2.titleColor
+  end
+end
+
+local function makeTextLabel2()
+  local instance4 = f4()
+  local head2 = instance4 and instance4:FindFirstChild("Head")
+  local humanoid = getHumanoid(instance4)
+
+  if not v2.showHP or not head2 or not humanoid then
+    f2()
+    return
+  end
+
+  if not TFKHPInfo or TFKHPInfo.Parent ~= head2 then
+    f2()
+
+    TFKHPInfo = Instance.new("BillboardGui")
+    TFKHPInfo.Name =  "TFKHPInfo"
+    TFKHPInfo.Size = UDim2.fromOffset(180, 30)
+    TFKHPInfo.StudsOffset = Vector3.new(0, 2.05, 0)
+    TFKHPInfo.AlwaysOnTop = true
+    TFKHPInfo.MaxDistance = 200
+    TFKHPInfo.Parent = head2
+
+    local background = Instance.new("Frame")
+    background.Name = "Background"
+    background.Size = UDim2.new(1, 0, 0, 10)
+    background.Position = UDim2.new(0, 0, 0, 0)
+    background.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    background.BorderSizePixel = 0
+    background.Parent = TFKHPInfo
+
+    local uiCorner3 = Instance.new("UICorner")
+    uiCorner3.CornerRadius = UDim.new(0, 4)
+    uiCorner3.Parent = background
+
+    local fill = Instance.new("Frame")
+    fill.Name = "Fill"
+    fill.Size = UDim2.fromScale(1, 1)
+    fill.BackgroundColor3 = v2.hpColor
+    fill.BorderSizePixel = 0
+    fill.Parent = background
+
+    local uiCorner4 = Instance.new("UICorner")
+    uiCorner4.CornerRadius = UDim.new(0, 4)
+    uiCorner4.Parent = fill
+
+    local hpText = Instance.new("TextLabel")
+    hpText.Name = "HPText"
+    hpText.Size = UDim2.new(1, 0, 0, 18)
+    hpText.Position = UDim2.new(0, 0, 0, 11)
+    hpText.BackgroundTransparency = 1
+    hpText.Font = Enum.Font.GothamSemibold
+    hpText.TextSize = 12
+    hpText.TextStrokeTransparency = 0.5
+    hpText.Parent = TFKHPInfo
+  end
+
+  local background2 = TFKHPInfo:FindFirstChild("Background")
+
+  local fill2 = background2
+  fill2 = background2 and background2:FindFirstChild("Fill")
+
+  local hpText2 = TFKHPInfo:FindFirstChild("HPText")
+
+  if fill2 then
+    local clamped = 0
+
+    if humanoid.MaxHealth > 0 then
+      clamped = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+    end
+
+    fill2.Size = UDim2.new(clamped, 0, 1, 0)
+    fill2.BackgroundColor3 = v2.hpColor
+  end
+
+  if hpText2 then
+    hpText2.Text = string.format(
+      "%d / %d HP", math.floor(humanoid.Health + 0.5), math.floor(humanoid.MaxHealth + 0.5)
+    )
+  end
+end
+
+local tab = window:CreateTab("Titels and Hp Bar", "palette")
+tab:CreateSection("Custom Title")
+
+tab:CreateInput({
+  Name = "Enter Custom Title",
+  PlaceholderText = "Write your own title...",
+  CurrentValue = v2.titleText,
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value3)
+    v2.titleText = value3
+    makeTextLabel()
+  end,
+})
+
+tab:CreateColorPicker({
+  Name = "Title Color",
+  Color = v2.titleColor,
+  Callback = function(value4)
+    v2.titleColor = value4
+    makeTextLabel()
+  end,
+})
+
+tab:CreateToggle({
+  Name = "Show Custom Title",
+  CurrentValue = true,
+  Callback = function(value5)
+    v2.showTitle = value5
+    makeTextLabel()
+  end,
+})
+
+tab:CreateSection("Health Bar")
+
+tab:CreateToggle({
+  Name = "Show HP Information",
+  CurrentValue = true,
+  Callback = function(value6)
+    v2.showHP = value6
+    makeTextLabel2()
+  end,
+})
+
+tab:CreateColorPicker({
+  Name = "HP Bar Color",
+  Color = v2.hpColor,
+  Callback = function(value7)
+    v2.hpColor = value7
+    makeTextLabel2()
+  end,
+})
+
+tab:CreateSection("TFK Title Animation")
+
+tab:CreateSlider({
+  Name = "TFK Change Speed",
+  Range = { 1, 100 },
+  Increment = 1,
+  Suffix = "x",
+  CurrentValue = 1,
+  Callback = function(value8) v2.rgbSpeed = value8 end,
+})
+
+tab:CreateToggle({
+  Name = "TFK Title Animation",
+  CurrentValue = false,
+  Callback = function(value9) v2.rgbEnabled = value9 end,
+})
+
+tab:CreateSection("Black / White Title Animation")
+
+tab:CreateSlider({
+  Name = "Black / White Change Speed",
+  Range = { 1, 100 },
+  Increment = 1,
+  Suffix = "x",
+  CurrentValue = 2,
+  Callback = function(value10) v2.blackWhiteSpeed = value10 end,
+})
+
+tab:CreateToggle({
+  Name = "Black / White Title Animation",
+  CurrentValue = false,
+  Callback = function(value11) v2.blackWhiteEnabled = value11 end,
+})
+
+local combatDefenseTab = window:CreateTab("Combat & Defense", "shield")
+combatDefenseTab:CreateSection("NPC Test Tools")
+
+combatDefenseTab:CreateSlider({
+  Name = "Hitbox Aura Size",
+  Range = { 2, 28 },
+  Increment = 1,
+  Suffix = " studs",
+  CurrentValue = v2.hitboxSize,
+  Callback = function(value12) v2.hitboxSize = value12 end,
+})
+
+combatDefenseTab:CreateSlider({
+  Name = "Hitbox Aura Range",
+  Range = { 5, 100 },
+  Increment = 1,
+  Suffix = " studs",
+  CurrentValue = v2.hitboxDistance,
+  Callback = function(value13) v2.hitboxDistance = value13 end,
+})
+
+local localPlayer3 = players.LocalPlayer
+local hitboxAura = false
+local seen = {}
+Color3.fromRGB(255, 182, 193)
+
+local function f8(p5)
+  local humanoidRootPart
+
+  if p5 and p5.Character then
+    humanoidRootPart = p5.Character:FindFirstChild("HumanoidRootPart")
+
+    if humanoidRootPart then
+      pcall(function()
+        humanoidRootPart.Size = Vector3.new(2, 2, 1)
+        humanoidRootPart.Transparency = 1
+        humanoidRootPart.Material = Enum.Material.Plastic
+        humanoidRootPart.CanCollide = true
+        humanoidRootPart.Shape = Enum.PartType.Block
+      end)
+    end
+  end
+end
+
+runService.Heartbeat:Connect(function()
+  if not hitboxAura then
+    return
+  end
+
+  local humanoidRootPart2 = localPlayer3.Character
+    and localPlayer3.Character:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart2 then
+    return
+  end
+
+  local seen2 = {}
+  local huge = math.huge
+  local v5
+
+  for _, value14 in ipairs(players:GetPlayers()) do
+    if value14 ~= localPlayer3 and value14.Character then
+      local humanoidRootPart3 = value14.Character:FindFirstChild("HumanoidRootPart")
+
+      if humanoidRootPart3 then
+        local magnitude = (humanoidRootPart2.Position - humanoidRootPart3.Position).Magnitude
+
+        if magnitude <= huge then
+          huge = magnitude
+          v5 = value14
+        end
+      end
+    end
+  end
+
+  if v5 and v5.Character and huge <= 28 then
+    if v5.Character:FindFirstChild("HumanoidRootPart") then
+      seen2[v5] = true
+      seen[v5] = true
+    end
+  end
+
+  for key, _ in pairs(seen) do
+    if not seen2[key] then
+      f8(key)
+      seen[key] = nil
+    end
+  end
+end)
+
+combatDefenseTab:CreateToggle({
+  Name = "Hitbox Aura",
+  CurrentValue = false,
+  Callback = function(value15)
+    hitboxAura = value15
+    v2.hitboxAuraEnabled = value15
+
+    if not value15 then
+      for key2 in pairs(seen) do
+        f8(key2)
+        seen[key2] = nil
+      end
+
+      for key3, value16 in pairs(map) do
+        if key3 and key3.Parent then
+          pcall(function()
+            key3.Size = value16.Size
+            key3.Transparency = value16.Transparency
+            key3.Color = value16.Color
+            key3.Material = value16.Material
+            key3.CanCollide = value16.CanCollide
+          end)
+        end
+
+        map[key3] = nil
+      end
+    end
+
+    f3("Hitbox Aura", value15 and "Enabled." or "Disabled; modified hitboxes restored.", 3)
+  end,
+})
+
+combatDefenseTab:CreateSection("Game-System Switches")
+
+local antiGrabEnabled = v2.antiGrabEnabled
+local antiGrabDelay = v2.antiGrabDelay
+
+local function f9(instance5)
+  local waitForChild = instance5:WaitForChild("Humanoid", 10)
+  local waitForChild2 = instance5:WaitForChild("HumanoidRootPart", 10)
+
+  if not waitForChild or not waitForChild2 then
+    return
+  end
+
+  waitForChild:GetPropertyChangedSignal("PlatformStand"):Connect(function()
+    if not antiGrabEnabled then
+      return
+    end
+
+    local position
+
+    if waitForChild.PlatformStand then
+      position = waitForChild2.Position
+
+      task.delay(antiGrabDelay, function()
+        local humanoidRootPart4 = localPlayer.Character
+          and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart4 then
+          humanoidRootPart4.CFrame = CFrame.new(position)
+        end
+      end)
+    end
+  end)
+end
+
+localPlayer.CharacterAdded:Connect(function(character3) task.spawn(f9, character3) end)
+
+if localPlayer.Character then
+  task.spawn(f9, localPlayer.Character)
+end
+
+combatDefenseTab:CreateToggle({
+  Name = "Anti Grab",
+  CurrentValue = false,
+  Callback = function(value17)
+    antiGrabEnabled = value17
+    v2.antiGrabEnabled = value17
+    f3("Anti Grab", value17 and "Enabled." or "Disabled.", 4)
+  end,
+})
+
+combatDefenseTab:CreateSlider({
+  Name = "Anti Grab Delay",
+  Range = { 0, 2 },
+  Increment = 0.05,
+  Suffix = " sec",
+  CurrentValue = v2.antiGrabDelay,
+  Callback = function(value18)
+    v2.antiGrabDelay = value18
+    antiGrabDelay = value18
+  end,
+})
+
+combatDefenseTab:CreateToggle({
+  Name = "Auto Block",
+  CurrentValue = false,
+  Callback = function(value19)
+    v2.autoBlockEnabled = value19
+
+    task.spawn(function()
+      while true do
+        pcall(function()
+          replicatedStorage.Packages.Knit.Services.CombatService.RF.y:InvokeServer(true)
+        end)
+
+        task.wait(1)
+      end
+    end)
+
+    f3("Auto Block", value19 and "Enabled. Connect your game's block function in the marked callback."
+      or "Disabled.", 4)
+  end,
+})
+
+local ok3, result3 = pcall(function() return virtualInputManager end)
+local v6
+
+if ok3 then
+  v6 = result3
+end
+
+local flag3 = false
+
+local function f10()
+  if flag3 then
+    return
+  end
+
+  flag3 = true
+
+  task.spawn(function()
+    while v2.autoClickerEnabled do
+      local currentCamera = workspaceService.CurrentCamera
+
+      if not v6 or not currentCamera then
+        warn("TFK HUB AutoClicker unavailable: VirtualInputManager is restricted or camera is missing.")
+        v2.autoClickerEnabled = false
+        break
+      end
+
+      local viewportSize = currentCamera.ViewportSize
+      local rounded = math.floor(viewportSize.X / 2)
+      local rounded2 = math.floor(viewportSize.Y / 2)
+
+      local ok4, result4 = pcall(function()
+        v6:SendMouseButtonEvent(rounded, rounded2, 0, true, game, 1)
+      end)
+
+      if not ok4 then
+        warn("TFK HUB AutoClicker could not send click:", result4)
+        v2.autoClickerEnabled = false
+        break
+      end
+
+      task.wait(0.01)
+      pcall(function() v6:SendMouseButtonEvent(rounded, rounded2, 0, false, game, 1) end)
+      task.wait(0.01)
+    end
+
+    local currentCamera2 = workspaceService.CurrentCamera
+    local viewportSize2
+
+    if v6 and currentCamera2 then
+      viewportSize2 = currentCamera2.ViewportSize
+
+      pcall(function()
+        v6:SendMouseButtonEvent(
+          math.floor(viewportSize2.X / 2), math.floor(viewportSize2.Y / 2), 0, false, game, 1
+        )
+      end)
+    end
+
+    flag3 = false
+  end)
+end
+
+combatDefenseTab:CreateToggle({
+  Name = "AutoClicker",
+  CurrentValue = false,
+  Callback = function(value20)
+    v2.autoClickerEnabled = value20
+
+    if value20 then
+      f10()
+    end
+
+    f3("AutoClicker", value20 and "Enabled." or "Disabled.", 4)
+  end,
+})
+
+combatDefenseTab:CreateToggle({
+  Name = "No Slow",
+  CurrentValue = false,
+  Callback = function(value21)
+    v2.noSlowEnabled = value21
+    f3("No Slow", value21 and "Enabled for the local movement controller." or "Disabled.", 3)
+  end,
+})
+
+combatDefenseTab:CreateToggle({
+  Name = "Anti Ragdoll",
+  CurrentValue = false,
+  Callback = function(value22)
+    v2.antiRagdollEnabled = value22
+
+    f3("Anti Ragdoll", value22 and "Enabled locally. Your game's ragdoll controller must respect this flag."
+      or "Disabled.", 4)
+  end,
+})
+
+local tab2 = window:CreateTab("Movement and Anti Hit", "move")
+tab2:CreateSection("TP Walk")
+
+tab2:CreateSlider({
+  Name = "TP Walk Step",
+  Range = { 0.1, 5 },
+  Increment = 0.1,
+  Suffix = " studs/frame",
+  CurrentValue = v2.tpWalkSpeed,
+  Callback = function(value23) v2.tpWalkSpeed = value23 end,
+})
+
+tab2:CreateToggle({
+  Name = "TP Walk",
+  CurrentValue = false,
+  Callback = function(value24)
+    v2.tpWalkEnabled = value24
+    f3("TP Walk", value24 and "Enabled." or "Disabled.")
+  end,
+})
+
+tab2:CreateSection("Follow")
+
+tab2:CreateInput({
+  Name = "Follow Target",
+  PlaceholderText = "Player name or NPC in workspace.NPCs",
+  CurrentValue = "",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value25) v2.followTarget = value25 end,
+})
+
+tab2:CreateSlider({
+  Name = "Follow Distance",
+  Range = { 2, 25 },
+  Increment = 1,
+  Suffix = " studs",
+  CurrentValue = v2.followDistance,
+  Callback = function(value26) v2.followDistance = value26 end,
+})
+
+tab2:CreateToggle({
+  Name = "Follow",
+  CurrentValue = false,
+  Callback = function(value27)
+    v2.followEnabled = value27
+
+    if value27 then
+      v2.orbitEnabled = false
+      f3("Follow", "Following the selected target.")
+    else
+      f3("Follow", "Stopped.")
+    end
+  end,
+})
+
+tab2:CreateSection("Orbit")
+
+tab2:CreateInput({
+  Name = "Orbit Target",
+  PlaceholderText = "Player name or NPC in workspace.NPCs",
+  CurrentValue = "",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value28) v2.orbitTarget = value28 end,
+})
+
+tab2:CreateSlider({
+  Name = "Orbit Distance",
+  Range = { 2, 25 },
+  Increment = 1,
+  Suffix = " studs",
+  CurrentValue = v2.orbitDistance,
+  Callback = function(value29) v2.orbitDistance = value29 end,
+})
+
+tab2:CreateSlider({
+  Name = "Orbit Speed",
+  Range = { 1, 10 },
+  Increment = 1,
+  Suffix = "x",
+  CurrentValue = v2.orbitSpeed,
+  Callback = function(value30) v2.orbitSpeed = value30 end,
+})
+
+tab2:CreateToggle({
+  Name = "Orbit",
+  CurrentValue = false,
+  Callback = function(value31)
+    v2.orbitEnabled = value31
+
+    if value31 then
+      v2.followEnabled = false
+      f3("Orbit", "Orbiting the selected target.")
+    else
+      f3("Orbit", "Stopped.")
+    end
+  end,
+})
+
+tab2:CreateSection("Hit TP")
+
+tab2:CreateInput({
+  Name = "X Coordinate",
+  PlaceholderText = "0",
+  CurrentValue = "0",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value32)
+    local v7 = tonumber(value32)
+
+    if v7 then
+      v2.hitTPPosition = Vector3.new(v7, v2.hitTPPosition.Y, v2.hitTPPosition.Z)
+    end
+  end,
+})
+
+tab2:CreateInput({
+  Name = "Y Coordinate",
+  PlaceholderText = "10",
+  CurrentValue = "10",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value33)
+    local v8 = tonumber(value33)
+
+    if v8 then
+      v2.hitTPPosition = Vector3.new(v2.hitTPPosition.X, v8, v2.hitTPPosition.Z)
+    end
+  end,
+})
+
+tab2:CreateInput({
+  Name = "Z Coordinate",
+  PlaceholderText = "0",
+  CurrentValue = "0",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value34)
+    local v9 = tonumber(value34)
+
+    if v9 then
+      v2.hitTPPosition = Vector3.new(v2.hitTPPosition.X, v2.hitTPPosition.Y, v9)
+    end
+  end,
+})
+
+tab2:CreateSlider({
+  Name = "Anti Hit Delay",
+  Range = { 0.1, 5 },
+  Increment = 0.1,
+  Suffix = " sec",
+  CurrentValue = v2.hitTPDelay,
+  Callback = function(value35) v2.hitTPDelay = value35 end,
+})
+
+tab2:CreateToggle({
+  Name = "Anti Hit (Hit tp)",
+  CurrentValue = false,
+  Callback = function(value36)
+    v2.hitTPEnabled = value36
+
+    f3("Hit TP", value36 and "Will teleport to the selected coordinates when your health drops."
+      or "Disabled.")
+  end,
+})
+
+tab2:CreateButton({
+  Name = "Teleport to Coordinates Now",
+  Callback = function()
+    local humanoidRootPart5 = getHumanoidRootPart()
+
+    if humanoidRootPart5 then
+      humanoidRootPart5.CFrame = CFrame.new(v2.hitTPPosition)
+      f3("Hit TP", "Teleported to selected coordinates.")
+    else
+      f3("Hit TP", "Character not ready.")
+    end
+  end,
+})
+
+local tab3 = window:CreateTab("Kill Farming Bot", "bot")
+tab3:CreateSection("Rush (Player Target)")
+
+tab3:CreateInput({
+  Name = "Player Target",
+  PlaceholderText = "Player username or display name",
+  CurrentValue = "",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value37) v2.rushTarget = value37 end,
+})
+
+tab3:CreateToggle({
+  Name = "Rush",
+  CurrentValue = false,
+  Callback = function(value38)
+    v2.rushEnabled = value38
+
+    if value38 then
+      v2.autoKillTPEnabled = false
+      v2.tpWalkEnabled = false
+      v2.followEnabled = false
+      v2.orbitEnabled = false
+    end
+
+    f3("Rush", value38 and "Rush started for the selected player." or "Stopped.")
+  end,
+})
+
+tab3:CreateSection("Auto Farm Position (Player Target)")
+
+tab3:CreateInput({
+  Name = "Player Target",
+  PlaceholderText = "Player username or display name",
+  CurrentValue = "",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value39) v2.autoKillTarget = value39 end,
+})
+
+tab3:CreateDropdown({
+  Name = "Auto Farm Position",
+  Options = { "Front", "Above" },
+  CurrentOption = { "Front" },
+  MultipleOptions = false,
+  Callback = function(value40)
+    if typeof(value40) == "table" then
+      v2.autoFarmPosition = value40[1] or "Front"
+    else
+      v2.autoFarmPosition = value40
+    end
+  end,
+})
+
+tab3:CreateToggle({
+  Name = "Kill Farm Bot",
+  CurrentValue = false,
+  Callback = function(value41)
+    v2.autoKillTPEnabled = value41
+
+    if value41 then
+      v2.rushEnabled = false
+    end
+
+    f3(
+      "Auto Farm", value41 and "Moving to the selected player's position offset." or "Disabled."
+    )
+  end,
+})
+
+local now = 0
+local health
+local cframe
+
+v3.main = runService.Heartbeat:Connect(function(delta)
+  local v10 = f4()
+  local humanoid2 = getHumanoid(v10)
+  local humanoidRootPart6 = getHumanoidRootPart(v10)
+
+  if v2.blackWhiteEnabled then
+    local v11 = math.sin(os.clock() * v2.blackWhiteSpeed * 2)
+    local v12 = math.floor((v11 + 1) / 2 * 255 + 0.5) / 255
+    v2.titleColor = Color3.new(v12, v12, v12)
+
+    if titleText then
+      titleText.TextColor3 = v2.titleColor
+    end
+  elseif v2.rgbEnabled then
+    local now2 = os.clock()
+    local rgbSpeed = v2.rgbSpeed
+    v2.titleColor = Color3.fromHSV(now2 * 0.12 * rgbSpeed % 1, 0.8, 1)
+
+    if titleText then
+      titleText.TextColor3 = v2.titleColor
+    end
+  end
+
+  local vector, v13, cframe2
+
+  if humanoid2 then
+    makeTextLabel2()
+
+    if health == nil then
+      health = humanoid2.Health
+
+      if humanoidRootPart6 then
+        cframe = humanoidRootPart6.CFrame
+      end
+    elseif humanoid2.Health < health then
+      cframe2 = cframe or humanoidRootPart6 and humanoidRootPart6.CFrame
+
+      if v2.hitTPEnabled and humanoidRootPart6 and os.clock() - now >= 0.35 then
+        now = os.clock()
+        local v14 = cframe2 and -cframe2.LookVector * 12
+
+        local vector2 = v14
+        vector2 = v14 or Vector3.new(0, 8, 0)
+
+        if cframe2 then
+          humanoidRootPart6.CFrame = cframe2 + vector2 + Vector3.new(0, 5, 0)
+
+          task.delay(v2.hitTPDelay, function()
+            if localPlayer.Character == v10 then
+              local humanoidRootPart7 = getHumanoidRootPart(v10)
+
+              if humanoidRootPart7 and cframe2 then
+                humanoidRootPart7.CFrame = cframe2
+              end
+            end
+          end)
+        end
+      end
+    elseif humanoidRootPart6 then
+      cframe = humanoidRootPart6.CFrame
+    end
+
+    health = humanoid2.Health
+
+    if v2.noSlowEnabled and humanoid2.WalkSpeed < 16 then
+      humanoid2.WalkSpeed = 16
+    end
+
+    if v2.tpWalkEnabled and humanoidRootPart6 and humanoid2.MoveDirection.Magnitude > 0 then
+      humanoidRootPart6.CFrame = humanoidRootPart6.CFrame
+        + humanoid2.MoveDirection * v2.tpWalkSpeed
+    end
+
+    if v2.followEnabled and humanoidRootPart6 then
+      local humanoidRootPart8 = getHumanoidRootPart((f7(v2.followTarget)))
+
+      if humanoidRootPart8 then
+        local v15 = humanoidRootPart8.Position
+          - humanoidRootPart8.CFrame.LookVector * v2.followDistance
+
+        local vector3 = Vector3.new(v15.X, humanoidRootPart8.Position.Y, v15.Z)
+
+        humanoidRootPart6.CFrame = CFrame.lookAt(humanoidRootPart6.Position:Lerp(vector3, math.clamp(delta
+          * 5, 0, 1)), humanoidRootPart8.Position)
+      end
+    end
+
+    if v2.orbitEnabled and humanoidRootPart6 then
+      local humanoidRootPart9 = getHumanoidRootPart((f7(v2.orbitTarget)))
+
+      if humanoidRootPart9 then
+        total = total + delta * v2.orbitSpeed
+        local new = Vector3.new
+        local v16 = math.cos(total)
+        local orbitDistance = v2.orbitDistance
+        local v17 = math.sin(total)
+        local orbitDistance2 = v2.orbitDistance
+        local v18 = new(v16 * orbitDistance, 0, v17 * orbitDistance2)
+        local position2 = humanoidRootPart9.Position
+
+        humanoidRootPart6.CFrame = CFrame.lookAt(humanoidRootPart6.Position:Lerp(position2 + v18, math.clamp(delta
+          * 5, 0, 1)), humanoidRootPart9.Position)
+      end
+    end
+
+    if v2.rushEnabled and humanoidRootPart6 and humanoid2 then
+      local v19 = f1(v2.rushTarget)
+      local character4 = v19 and v19.Character
+      local v20 = v19 and v19 ~= localPlayer and getHumanoidRootPart(character4) or nil
+      local humanoid3 = getHumanoid(character4)
+
+      if v20 and humanoid3 and humanoid3.Health > 0 then
+        local lookVector = v20.CFrame.LookVector
+        local vector4 = Vector3.new(lookVector.X, 0, lookVector.Z)
+
+        if vector4.Magnitude < 0.001 then
+          vector = Vector3.new(0, 0, -1)
+        else
+          vector = vector4.Unit
+        end
+
+        local v21 = v20.Position - vector * 4
+        local vector5 = Vector3.new(v21.X, v20.Position.Y, v21.Z)
+
+        if (vector5 - humanoidRootPart6.Position).Magnitude > 0.6 then
+          local clamped2 = math.clamp(delta * 4, 0, 1)
+          local lerp = humanoidRootPart6.Position:Lerp(vector5, clamped2)
+          humanoid2:Move(Vector3.zero, false)
+          humanoidRootPart6.CFrame = CFrame.lookAt(lerp, v20.Position)
+        else
+          humanoid2:Move(Vector3.zero, false)
+          humanoidRootPart6.CFrame = CFrame.lookAt(humanoidRootPart6.Position, v20.Position)
+        end
+      end
+    end
+
+    if v2.autoKillTPEnabled and humanoidRootPart6 then
+      local v22 = f1(v2.autoKillTarget)
+      local character5 = v22 and v22.Character
+      local v23 = v22 ~= localPlayer and getHumanoidRootPart(character5) or nil
+      local humanoid4 = getHumanoid(character5)
+
+      if v23 and humanoid4 and humanoid4.Health > 0 then
+        if v2.autoFarmPosition == "Above" then
+          v13 = v23.Position + Vector3.new(0, 3, 0)
+        else
+          v13 = v23.Position - v23.CFrame.LookVector * 4
+        end
+
+        humanoidRootPart6.CFrame = CFrame.lookAt(v13, v23.Position)
+      end
+    end
+  end
+
+  if v2.hitboxAuraEnabled and humanoidRootPart6 then
+    local npCs2 = workspaceService:FindFirstChild("NPCs")
+    local hitboxDistance = v2.hitboxDistance
+    local v24
+
+    if npCs2 then
+      for _, value42 in ipairs(npCs2:GetChildren()) do
+        if value42:IsA("Model") then
+          local humanoidRootPart10 = value42:FindFirstChild("HumanoidRootPart")
+          local humanoid5 = value42:FindFirstChildOfClass("Humanoid")
+
+          if humanoidRootPart10 and humanoid5 and humanoid5.Health > 0 then
+            local magnitude2 = (humanoidRootPart6.Position
+              - humanoidRootPart10.Position).Magnitude
+
+            if magnitude2 <= hitboxDistance then
+              hitboxDistance = magnitude2
+              v24 = humanoidRootPart10
+            end
+          end
+        end
+      end
+    end
+
+    if v24 then
+      if not map[v24] then
+        map[v24] = {
+          Size = v24.Size,
+          Transparency = v24.Transparency,
+          Color = v24.Color,
+          Material = v24.Material,
+          CanCollide = v24.CanCollide,
+        }
+      end
+
+      v24.Size = Vector3.new(v2.hitboxSize, v2.hitboxSize, v2.hitboxSize)
+      v24.Transparency = 0.5
+      v24.Color = Color3.fromRGB(255, 120, 170)
+      v24.Material = Enum.Material.Neon
+      v24.CanCollide = false
+    else
+      for key4, value43 in pairs(map) do
+        if key4 and key4.Parent then
+          key4.Size = value43.Size
+          key4.Transparency = value43.Transparency
+          key4.Color = value43.Color
+          key4.Material = value43.Material
+          key4.CanCollide = value43.CanCollide
+        end
+
+        map[key4] = nil
+      end
+    end
+  end
+end)
+
+localPlayer.CharacterAdded:Connect(function()
+  health = nil
+  cframe = nil
+  task.wait(1)
+  makeTextLabel()
+  makeTextLabel2()
+end)
+
+localPlayer.CharacterRemoving:Connect(function()
+  f5()
+  f2()
+end)
+
+makeTextLabel()
+makeTextLabel2()
+
+window:CreateTab("Freeze GUI", "snowflake"):CreateButton({
+  Name = "Open Freeze GUI",
+  Callback = function()
+    local declineRequest = replicatedStorage.DeclineRequest
+    local carryStarted = replicatedStorage.CarryStarted
+    local sendRequestGui = replicatedStorage.SendRequestGui
+    local stopCarry = replicatedStorage.StopCarry
+    local togglePrompts = replicatedStorage.TogglePrompts
+    local carryRequest = replicatedStorage.CarryRequest
+    local localPlayer4 = players.LocalPlayer
+    local v25 = {}
+
+    local function f11(key5, p6)
+      return v25[key5] ~= nil and v25[key5] or p6
+    end
+
+    local function f12(key6, text)
+      v25[key6] = text
+    end
+
+    local function f13(text2)
+      local list = {}
+
+      if text2 == "" then
+        return list
+      end
+
+      for match2 in text2:gmatch("%S+") do
+        table.insert(list, match2:lower())
+      end
+
+      return list
+    end
+
+    local function f14(text3, list2)
+      if #list2 == 0 then
+        return true
+      end
+
+      local lower3 = text3:lower()
+
+      for _, value44 in ipairs(list2) do
+        if lower3:find(value44, 1, true) then
+          return true
+        end
+      end
+
+      return false
+    end
+
+    local function f15(text4, list3)
+      local lower4 = text4:lower()
+
+      for _, value45 in ipairs(list3) do
+        if lower4:find(value45, 1, true) then
+          return true
+        end
+      end
+
+      return false
+    end
+
+    local map2 = {}
+
+    local v26 = {
+      requests = 0,
+      carries = 0,
+      guis = 0,
+      prompts = 0,
+    }
+
+    local function f16()
+      return v26
+    end
+
+    local function f17()
+      v26 = {
+        requests = 0,
+        carries = 0,
+        guis = 0,
+        prompts = 0,
+      }
+    end
+
+    local function f18()
+      if map2.declineRequest then
+        map2.declineRequest:Disconnect()
+      end
+
+      if map2.carryStarted then
+        map2.carryStarted:Disconnect()
+      end
+
+      if map2.sendRequestGui then
+        map2.sendRequestGui:Disconnect()
+      end
+
+      if map2.togglePrompts then
+        map2.togglePrompts:Disconnect()
+      end
+
+      if map2.spamLoop then
+        map2.spamLoop:Disconnect()
+      end
+
+      f17()
+
+      map2.declineRequest = localPlayer4.ChildAdded:Connect(function(child)
+        if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
+          local lower5 = string.lower(child.Name)
+
+          if lower5:find("request") or lower5:find("invite") or lower5:find("accept") then
+            for j = 1, 4 do
+              pcall(function() declineRequest:FireServer() end)
+            end
+
+            v26.requests = v26.requests + 1
+          end
+        end
+      end)
+
+      map2.carryStarted = carryStarted.OnClientEvent:Connect(function(p7)
+        local v27 = f13((f11("DeclineWhitelist", "")))
+        local flag4 = true
+
+        if #v27 > 0 and p7 then
+          if f14(p7.Name, v27) or f14(p7.DisplayName, v27) then
+            flag4 = false
+          end
+        end
+
+        if flag4 then
+          for k = 1, 5 do
+            pcall(function()
+              stopCarry:FireServer()
+              declineRequest:FireServer()
+            end)
+          end
+
+          v26.carries = v26.carries + 1
+        end
+      end)
+
+      map2.sendRequestGui = sendRequestGui.OnClientEvent:Connect(function(p8)
+        local v28 = f13((f11("DeclineWhitelist", "")))
+        local v29 = #v28 > 0
+        local flag5 = true
+
+        if v29 and p8 then
+          if f14(p8.Name, v28) or f14(p8.DisplayName, v28) then
+            flag5 = false
+          end
+        end
+
+        if flag5 then
+          for m = 1, 5 do
+            pcall(function()
+              declineRequest:FireServer()
+              stopCarry:FireServer()
+            end)
+          end
+
+          v26.guis = v26.guis + 1
+        end
+      end)
+
+      map2.togglePrompts = togglePrompts.OnClientEvent:Connect(function(...)
+        for n = 1, 5 do
+          pcall(function() togglePrompts:FireServer(false) end)
+        end
+
+        v26.prompts = v26.prompts + 1
+      end)
+
+      map2.spamLoop = runService.Heartbeat:Connect(function()
+        if f11("AutoDecline", false) then
+          for i6 = 1, 5 do
+            pcall(function()
+              declineRequest:FireServer()
+              stopCarry:FireServer()
+              togglePrompts:FireServer(false)
+            end)
+          end
+        end
+      end)
+    end
+
+    local function f19()
+      for _, value46 in pairs(map2) do
+        if value46 then
+          value46:Disconnect()
+        end
+      end
+
+      map2 = {}
+      f17()
+    end
+
+    local map3 = {}
+
+    local function f20()
+      if map3.megaSpamLoop then
+        map3.megaSpamLoop:Disconnect()
+      end
+
+      if map3.acceptIncoming then
+        map3.acceptIncoming:Disconnect()
+      end
+
+      map3.acceptIncoming = sendRequestGui.OnClientEvent:Connect(function(p9)
+        if p9 and p9 ~= localPlayer4 then
+          local v30 = f11("AutoAcceptWhitelist", "")
+          local v31 = f11("AutoAcceptBlacklist", "")
+          local v32 = f13(v30)
+          local v33 = f13(v31)
+
+          if f15(p9.Name, v33) or f15(p9.DisplayName, v33) then
+            return
+          end
+
+          local flag6 = false
+
+          if #v32 == 0 then
+            flag6 = true
+          elseif f14(p9.Name, v32) or f14(p9.DisplayName, v32) then
+            flag6 = true
+          end
+
+          if flag6 then
+            for i7 = 0, 1 do
+              pcall(function() carryRequest:FireServer(p9, 1, 0, 1, 0, 180, 0) end)
+            end
+          end
+        end
+      end)
+
+      map3.megaSpamLoop = runService.Heartbeat:Connect(function()
+        if f11("AutoAcceptRequests", false) then
+          local v34 = f11("AutoAcceptWhitelist", "")
+          local v35 = f11("AutoAcceptBlacklist", "")
+          local v36 = f13(v34)
+          local v37 = f13(v35)
+
+          for _, v38 in players:GetPlayers() do
+            if v38 ~= localPlayer4 then
+              if not (f15(v38.Name, v37) or f15(v38.DisplayName, v37)) then
+                local flag7 = false
+
+                if #v36 == 0 then
+                  flag7 = true
+                elseif f14(v38.Name, v36) or f14(v38.DisplayName, v36) then
+                  flag7 = true
+                end
+
+                if flag7 then
+                  for i8 = 0, 1 do
+                    pcall(function() carryRequest:FireServer(v38, 1, 0, 1, 0, 180, 0) end)
+                  end
+                end
+              end
+            end
+          end
+        end
+      end)
+    end
+
+    local function f21()
+      for _, value47 in pairs(map3) do
+        if value47 then
+          value47:Disconnect()
+        end
+      end
+
+      map3 = {}
+    end
+
+    local function f22()
+      if map3.declineLoop then
+        map3.declineLoop:Disconnect()
+      end
+
+      map3.declineLoop = runService.Heartbeat:Connect(function()
+        if f11("AutoDeclineRequests", false) then
+          pcall(function()
+            declineRequest:FireServer()
+            stopCarry:FireServer()
+          end)
+        end
+      end)
+    end
+
+    local function f23()
+      if map3.declineLoop then
+        map3.declineLoop:Disconnect()
+        map3.declineLoop = nil
+      end
+    end
+
+    local v39 = {}
+
+    local function f24()
+      if v39.spamLoop then
+        v39.spamLoop:Disconnect()
+      end
+
+      v39.spamLoop = runService.Heartbeat:Connect(function()
+        local findFirstChild
+
+        if f11("SpamCarry", false) then
+          local v40 = f11("SpamCarryTarget", "")
+
+          if v40 == "" then
+            return
+          end
+
+          findFirstChild = players:FindFirstChild(v40)
+
+          if not findFirstChild then
+            return
+          end
+
+          for i9 = 0, 1 do
+            pcall(function() carryRequest:FireServer(findFirstChild, 1, 0, 1, 0, 180, 0) end)
+          end
+        end
+      end)
+    end
+
+    local function f25()
+      if v39.spamLoop then
+        v39.spamLoop:Disconnect()
+        v39.spamLoop = nil
+      end
+    end
+
+    local combinedAutoToolsGUI = Instance.new("ScreenGui")
+    combinedAutoToolsGUI.Name = "CombinedAutoToolsGUI"
+    combinedAutoToolsGUI.ResetOnSpawn = false
+    combinedAutoToolsGUI.Parent = coreGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 380, 0, 650)
+    frame.Position = UDim2.new(0.5, -190, 0.5, -325)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    frame.BackgroundTransparency = 0.05
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = Color3.fromRGB(41, 128, 185)
+    frame.Active = true
+    frame.Draggable = true
+    frame.ClipsDescendants = true
+    frame.Parent = combinedAutoToolsGUI
+
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+    local frame2 = Instance.new("Frame")
+    frame2.Size = UDim2.new(1, 0, 0, 45)
+    frame2.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
+    frame2.BorderSizePixel = 0
+    frame2.Parent = frame
+
+    Instance.new("UICorner", frame2).CornerRadius = UDim.new(0, 12, 0, 0)
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, -50, 1, 0)
+    textLabel.Position = UDim2.new(0, 10, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Freeze Reworked (Original by Paz)"
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextSize = 16
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.Parent = frame2
+
+    local textButton = Instance.new("TextButton")
+    textButton.Size = UDim2.new(0, 40, 0, 40)
+    textButton.Position = UDim2.new(1, -42, 0.5, -20)
+    textButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+    textButton.BorderSizePixel = 0
+    textButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textButton.TextSize = 24
+    textButton.Font = Enum.Font.GothamBold
+    textButton.Text = "×"
+    textButton.Parent = frame2
+
+    Instance.new("UICorner", textButton).CornerRadius = UDim.new(0, 6)
+    textButton.MouseButton1Click:Connect(function() combinedAutoToolsGUI:Destroy() end)
+
+    local scrollingFrame = Instance.new("ScrollingFrame")
+    scrollingFrame.Size = UDim2.new(1, -4, 1, -50)
+    scrollingFrame.Position = UDim2.new(0, 2, 0, 45)
+    scrollingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    scrollingFrame.BorderSizePixel = 1
+    scrollingFrame.BorderColor3 = Color3.fromRGB(41, 128, 185)
+    scrollingFrame.ScrollBarThickness = 8
+    scrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(52, 152, 219)
+    scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scrollingFrame.Parent = frame
+
+    Instance.new("UICorner", scrollingFrame).CornerRadius = UDim.new(0, 4)
+
+    local instance6 = Instance.new("UIPadding", scrollingFrame)
+    instance6.PaddingLeft = UDim.new(0, 10)
+    instance6.PaddingRight = UDim.new(0, 10)
+    instance6.PaddingTop = UDim.new(0, 10)
+    instance6.PaddingBottom = UDim.new(0, 10)
+
+    Instance.new("UIListLayout", scrollingFrame).Padding = UDim.new(0, 8)
+
+    local function makeTextLabel3(scrollingFrame2, text5)
+      local frame3 = Instance.new("Frame")
+      frame3.Size = UDim2.new(1, 0, 0, 26)
+      frame3.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
+      frame3.BackgroundTransparency = 0.6
+      frame3.BorderSizePixel = 1
+      frame3.BorderColor3 = Color3.fromRGB(52, 152, 219)
+      frame3.Parent = scrollingFrame2
+
+      Instance.new("UICorner", frame3).CornerRadius = UDim.new(0, 6)
+
+      local textLabel2 = Instance.new("TextLabel")
+      textLabel2.Size = UDim2.new(1, -8, 1, 0)
+      textLabel2.Position = UDim2.new(0, 8, 0, 0)
+      textLabel2.BackgroundTransparency = 1
+      textLabel2.Text = "▶ " .. text5:upper()
+      textLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+      textLabel2.TextSize = 12
+      textLabel2.Font = Enum.Font.GothamBold
+      textLabel2.TextXAlignment = Enum.TextXAlignment.Left
+      textLabel2.Parent = frame3
+
+      return frame3
+    end
+
+    local function makeTextButton(scrollingFrame3, text6, p10, p11, p12)
+      local frame4 = Instance.new("Frame")
+      frame4.Size = UDim2.new(1, 0, 0, 32)
+      frame4.BackgroundColor3 = Color3.fromRGB(45, 50, 65)
+      frame4.BorderSizePixel = 1
+      frame4.BorderColor3 = Color3.fromRGB(52, 152, 219)
+      frame4.Parent = scrollingFrame3
+
+      Instance.new("UICorner", frame4).CornerRadius = UDim.new(0, 6)
+      local v41 = f11(p10, p11)
+
+      local textLabel3 = Instance.new("TextLabel")
+      textLabel3.Size = UDim2.new(0.6, 0, 1, 0)
+      textLabel3.Position = UDim2.new(0, 10, 0, 0)
+      textLabel3.BackgroundTransparency = 1
+      textLabel3.Text = text6
+      textLabel3.TextColor3 = Color3.fromRGB(230, 230, 230)
+      textLabel3.TextSize = 12
+      textLabel3.Font = Enum.Font.Gotham
+      textLabel3.TextXAlignment = Enum.TextXAlignment.Left
+      textLabel3.TextYAlignment = Enum.TextYAlignment.Center
+      textLabel3.Parent = frame4
+
+      local textButton2 = Instance.new("TextButton")
+      textButton2.Size = UDim2.new(0, 56, 0, 24)
+      textButton2.Position = UDim2.new(1, -62, 0.5, -12)
+
+      textButton2.BackgroundColor3 = v41 and Color3.fromRGB(46, 204, 113)
+        or Color3.fromRGB(100, 100, 120)
+
+      textButton2.Text = v41 and "ON" or "OFF"
+      textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
+      textButton2.TextSize = 11
+      textButton2.Font = Enum.Font.GothamBold
+      textButton2.BorderSizePixel = 1
+      textButton2.BorderColor3 = Color3.fromRGB(0, 0, 0)
+      textButton2.Parent = frame4
+
+      Instance.new("UICorner", textButton2).CornerRadius = UDim.new(0, 5)
+
+      textButton2.MouseButton1Click:Connect(function()
+        v41 = not v41
+        f12(p10, v41)
+
+        textButton2.BackgroundColor3 = v41 and Color3.fromRGB(46, 204, 113)
+          or Color3.fromRGB(100, 100, 120)
+
+        textButton2.Text = v41 and "ON" or "OFF"
+
+        if p12 then
+          p12(v41)
+        end
+      end)
+
+      return frame4, textButton2
+    end
+
+    local function makeTextLabel4(scrollingFrame4, text7, text8, placeholderText)
+      local frame5 = Instance.new("Frame")
+      frame5.Size = UDim2.new(1, 0, 0, 50)
+      frame5.BackgroundColor3 = Color3.fromRGB(45, 50, 65)
+      frame5.BorderSizePixel = 1
+      frame5.BorderColor3 = Color3.fromRGB(52, 152, 219)
+      frame5.Parent = scrollingFrame4
+
+      Instance.new("UICorner", frame5).CornerRadius = UDim.new(0, 6)
+
+      local textLabel4 = Instance.new("TextLabel")
+      textLabel4.Size = UDim2.new(1, -12, 0, 18)
+      textLabel4.Position = UDim2.new(0, 8, 0, 4)
+      textLabel4.BackgroundTransparency = 1
+      textLabel4.Text = text7
+      textLabel4.TextColor3 = Color3.fromRGB(150, 170, 190)
+      textLabel4.TextSize = 10
+      textLabel4.Font = Enum.Font.Gotham
+      textLabel4.TextXAlignment = Enum.TextXAlignment.Left
+      textLabel4.Parent = frame5
+
+      local textBox = Instance.new("TextBox")
+      textBox.Size = UDim2.new(1, -12, 0, 22)
+      textBox.Position = UDim2.new(0, 6, 0, 24)
+      textBox.BackgroundColor3 = Color3.fromRGB(30, 35, 50)
+      textBox.Text = f11(text8, "")
+      textBox.PlaceholderText = placeholderText
+      textBox.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
+      textBox.TextColor3 = Color3.fromRGB(200, 220, 240)
+      textBox.TextSize = 11
+      textBox.Font = Enum.Font.Gotham
+      textBox.ClearTextOnFocus = false
+      textBox.BorderSizePixel = 1
+      textBox.BorderColor3 = Color3.fromRGB(52, 152, 219)
+      textBox.Parent = frame5
+
+      Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 4)
+      textBox.FocusLost:Connect(function() f12(text8, textBox.Text) end)
+      return frame5
+    end
+
+    local function makeTextLabel5(scrollingFrame5, text9, color)
+      local textLabel5 = Instance.new("TextLabel")
+      textLabel5.Size = UDim2.new(1, 0, 0, 18)
+      textLabel5.BackgroundTransparency = 1
+      textLabel5.Text = text9
+      textLabel5.TextColor3 = color or Color3.fromRGB(150, 170, 190)
+      textLabel5.TextSize = 10
+      textLabel5.Font = Enum.Font.Gotham
+      textLabel5.BorderSizePixel = 0
+      textLabel5.Parent = scrollingFrame5
+      textLabel5.TextXAlignment = Enum.TextXAlignment.Left
+
+      return textLabel5
+    end
+
+    local function makeTextLabel6(scrollingFrame6)
+      local frame6 = Instance.new("Frame")
+      frame6.Size = UDim2.new(1, 0, 0, 110)
+      frame6.BackgroundColor3 = Color3.fromRGB(52, 152, 219)
+      frame6.BackgroundTransparency = 0.7
+      frame6.BorderSizePixel = 1
+      frame6.BorderColor3 = Color3.fromRGB(52, 152, 219)
+      frame6.Parent = scrollingFrame6
+
+      Instance.new("UICorner", frame6).CornerRadius = UDim.new(0, 6)
+
+      local textLabel6 = Instance.new("TextLabel")
+      textLabel6.Size = UDim2.new(1, 0, 0, 22)
+      textLabel6.BackgroundTransparency = 1
+      textLabel6.Text = "📊 DECLINE STATS"
+      textLabel6.TextColor3 = Color3.fromRGB(255, 255, 255)
+      textLabel6.TextSize = 12
+      textLabel6.Font = Enum.Font.GothamBold
+      textLabel6.Parent = frame6
+
+      local statsLabel = Instance.new("TextLabel")
+      statsLabel.Name = "StatsLabel"
+      statsLabel.Size = UDim2.new(1, -12, 1, -26)
+      statsLabel.Position = UDim2.new(0, 6, 0, 22)
+      statsLabel.BackgroundTransparency = 1
+      statsLabel.Text = "📨 Requests: 0\n🚗 Carries: 0\n🖥️ GUIs: 0\n⚙️ Prompts: 0"
+      statsLabel.TextColor3 = Color3.fromRGB(200, 220, 240)
+      statsLabel.TextSize = 11
+      statsLabel.Font = Enum.Font.Gotham
+      statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+      statsLabel.TextYAlignment = Enum.TextYAlignment.Top
+      statsLabel.Parent = frame6
+
+      return statsLabel
+    end
+
+    makeTextLabel3(scrollingFrame, "AUTO DECLINE")
+
+    makeTextButton(scrollingFrame, "Enable Auto Decline", "AutoDecline", false, function(p13)
+      if p13 then
+        f18()
+      else
+        f19()
+      end
+    end)
+
+    makeTextLabel4(
+      scrollingFrame, "Decline Whitelist (Optional)", "DeclineWhitelist",
+      "player1 player2 player3"
+    )
+
+    makeTextLabel5(
+      scrollingFrame, "💡 Leave empty to decline ALL", Color3.fromRGB(46, 204, 113)
+    )
+
+    makeTextLabel5(
+      scrollingFrame, "💡 List names to EXCLUDE them", Color3.fromRGB(46, 204, 113)
+    )
+
+    makeTextLabel3(scrollingFrame, "AUTO ACCEPT & SEND")
+
+    makeTextButton(scrollingFrame, "Auto Accept Requests", "AutoAcceptRequests", false, function(p14)
+      if p14 then
+        f20()
+      else
+        f21()
+      end
+    end)
+
+    makeTextLabel4(
+      scrollingFrame, "Accept/Send Whitelist (Optional)", "AutoAcceptWhitelist",
+      "player1 player2 player3"
+    )
+
+    makeTextLabel5(
+      scrollingFrame, "💡 Leave empty to accept from ALL", Color3.fromRGB(46, 204, 113)
+    )
+
+    makeTextLabel5(
+      scrollingFrame, "💡 List names to accept ONLY them", Color3.fromRGB(46, 204, 113)
+    )
+
+    makeTextLabel4(
+      scrollingFrame, "Blacklist (Optional)", "AutoAcceptBlacklist", "player_to_reject player2"
+    )
+
+    makeTextLabel5(
+      scrollingFrame, "🚫 Players in this list will be REJECTED", Color3.fromRGB(231, 76, 60)
+    )
+
+    makeTextLabel5(scrollingFrame, "🔥 Spams x5 per frame!", Color3.fromRGB(231, 76, 60))
+
+    makeTextLabel3(scrollingFrame, "AUTO DECLINE REQUESTS")
+
+    makeTextButton(scrollingFrame, "Enable Auto Decline", "AutoDeclineRequests", false, function(p15)
+      if p15 then
+        f22()
+      else
+        f23()
+      end
+    end)
+
+    makeTextLabel5(
+      scrollingFrame, "⚡ Continuously declines incoming requests",
+      Color3.fromRGB(241, 196, 15)
+    )
+
+    makeTextLabel3(scrollingFrame, "SPAM CARRY")
+
+    makeTextButton(scrollingFrame, "Enable Spam Carry", "SpamCarry", false, function(p16)
+      if p16 then
+        f24()
+      else
+        f25()
+      end
+    end)
+
+    makeTextLabel4(
+      scrollingFrame, "Target Player Username", "SpamCarryTarget", "exact username here"
+    )
+
+    makeTextLabel5(scrollingFrame, "⚠️ Spams x5 per frame", Color3.fromRGB(231, 76, 60))
+
+    makeTextLabel5(
+      scrollingFrame, "⚠️ Must type EXACT username", Color3.fromRGB(231, 76, 60)
+    )
+
+    makeTextLabel3(scrollingFrame, "STATS")
+    local textLabel7 = makeTextLabel6(scrollingFrame)
+
+    runService.Heartbeat:Connect(function()
+      local v42 = f16()
+
+      textLabel7.Text = string.format(
+        "📨 Requests: %d\n🚗 Carries: %d\n🖥️ GUIs: %d\n⚙️ Prompts: %d",
+        v42.requests, v42.carries, v42.guis, v42.prompts
+      )
+    end)
+
+    userInputService.InputBegan:Connect(function(input, p17)
+      if not p17 and input.KeyCode == Enum.KeyCode.L then
+        frame.Visible = not frame.Visible
+      end
+    end)
+
+    print("✅ Combined Auto Tools GUI Loaded!")
+    print("🔑 L = Toggle GUI Visibility")
+    print("🛡️ Auto Decline, Accept, and Spam all in one!")
+  end,
+})
+
+local killAuraTab = window:CreateTab("Kill Aura", "shield-check")
+local list4 = {}
+local v43 = {}
+local text10 = ""
+local v44 = true
+local flag8 = false
+local clamped3 = 16
+local range = 15
+local hitboxSize = 25
+local hitboxVisibility = 1
+local v45 = true
+local map4 = {}
+local flag9 = false
+
+local v46 = {
+  ["rbxassetid://78215114906302"] = true,
+  ["rbxassetid://82990592496976"] = true,
+  ["rbxassetid://118382180791352"] = true,
+  ["rbxassetid://134836817604323"] = true,
+  ["rbxassetid://140420997560896"] = true,
+  ["rbxassetid://90109303183886"] = true,
+  ["rbxassetid://72156524420062"] = true,
+}
+
+local function f26(p18)
+  if p18 and p18.Animation and v46[p18.Animation.AnimationId] then
+    pcall(function() p18:Stop() end)
+  end
+end
+
+local v47
+
+local function f27()
+  local v48 = v47
+  v47 = nil
+
+  if v48 then
+    pcall(function() task.cancel(v48) end)
+  end
+end
+
+local function f28(p19)
+  if not p19 or not p19.Character then
+    return false
+  end
+
+  local humanoid6 = p19.Character:FindFirstChildOfClass("Humanoid")
+  return humanoid6 ~= nil and humanoid6.Health > 0
+end
+
+local function f29(player)
+  if not player or not player.Character then
+    return
+  end
+
+  local humanoidRootPart11 = player.Character:FindFirstChild("HumanoidRootPart")
+  local v49 = map4[player]
+
+  if humanoidRootPart11 and v49 then
+    pcall(function()
+      humanoidRootPart11.Size = v49.Size
+      humanoidRootPart11.Transparency = v49.Transparency
+      humanoidRootPart11.Material = v49.Material
+      humanoidRootPart11.CanCollide = v49.CanCollide
+      humanoidRootPart11.Color = v49.Color
+      humanoidRootPart11.Shape = v49.Shape
+    end)
+  end
+
+  map4[player] = nil
+end
+
+local v50
+
+local function f30()
+  if v47 then
+    return
+  end
+
+  v47 = task.spawn(function()
+    while flag8 and v50 do
+      task.wait(1 / math.max(1, clamped3))
+    end
+
+    v47 = nil
+  end)
+end
+
+local connect, connect2
+
+local function f31()
+  flag9 = false
+
+  if connect then
+    pcall(function() connect:Disconnect() end)
+    connect = nil
+  end
+
+  if connect2 then
+    pcall(function() connect2:Disconnect() end)
+    connect2 = nil
+  end
+end
+
+local function f32(key7)
+  if not key7 or not key7.Character then
+    return
+  end
+
+  local humanoidRootPart12 = key7.Character:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart12 then
+    return
+  end
+
+  if not map4[key7] then
+    map4[key7] = {
+      Size = humanoidRootPart12.Size,
+      Transparency = humanoidRootPart12.Transparency,
+      Material = humanoidRootPart12.Material,
+      CanCollide = humanoidRootPart12.CanCollide,
+      Color = humanoidRootPart12.Color,
+      Shape = humanoidRootPart12.Shape,
+    }
+  end
+
+  pcall(function()
+    humanoidRootPart12.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+    humanoidRootPart12.Transparency = hitboxVisibility
+    humanoidRootPart12.Color = Color3.fromRGB(255, 182, 193)
+    humanoidRootPart12.Material = Enum.Material.Neon
+    humanoidRootPart12.CanCollide = false
+    humanoidRootPart12.Shape = Enum.PartType.Ball
+  end)
+end
+
+local function f33(character6)
+  if not flag8 or not v45 or not character6 then
+    return
+  end
+
+  local humanoid7 = character6:FindFirstChildOfClass("Humanoid")
+    or character6:WaitForChild("Humanoid", 3)
+
+  if not humanoid7 then
+    return
+  end
+
+  local animator = humanoid7:FindFirstChildOfClass("Animator")
+    or humanoid7:WaitForChild("Animator", 3)
+
+  if not animator then
+    return
+  end
+
+  for _, value48 in ipairs(animator:GetPlayingAnimationTracks()) do
+    f26(value48)
+  end
+
+  if connect then
+    pcall(function() connect:Disconnect() end)
+  end
+
+  connect = animator.AnimationPlayed:Connect(f26)
+end
+
+local function f34()
+  if not v45 or flag9 then
+    return
+  end
+
+  flag9 = true
+
+  if localPlayer.Character then
+    task.spawn(f33, localPlayer.Character)
+  end
+
+  if connect2 then
+    pcall(function() connect2:Disconnect() end)
+  end
+
+  connect2 = localPlayer.CharacterAdded:Connect(function(character7)
+    task.wait(0.4)
+
+    if flag8 and v45 then
+      f33(character7)
+    end
+  end)
+end
+
+local function f35()
+  for key8 in pairs(map4) do
+    f29(key8)
+  end
+
+  v50 = nil
+end
+
+local function f36()
+  flag8 = false
+  f35()
+  f31()
+  f27()
+end
+
+local f37
+
+local function f38()
+  local huge2 = math.huge
+
+  local humanoidRootPart13 = localPlayer.Character
+    and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart13 then
+    return nil, math.huge
+  end
+
+  local v51
+
+  for _, value49 in ipairs(players:GetPlayers()) do
+    if value49 ~= localPlayer and value49.Character and f28(value49) and not f37(value49) then
+      local humanoidRootPart14 = value49.Character:FindFirstChild("HumanoidRootPart")
+
+      if humanoidRootPart14 then
+        local magnitude3 = (humanoidRootPart13.Position - humanoidRootPart14.Position).Magnitude
+
+        if magnitude3 < huge2 then
+          v51 = value49
+          huge2 = magnitude3
+        end
+      end
+    end
+  end
+
+  return v51, huge2
+end
+
+local renderStepped = runService.RenderStepped
+local f39
+
+local function makeTextLabel7(player2)
+  f39(player2)
+
+  if not v44 or player2 == localPlayer or not f37(player2) then
+    return
+  end
+
+  local character8 = player2.Character
+  local humanoidRootPart15 = character8 and character8:FindFirstChild("HumanoidRootPart")
+
+  if not humanoidRootPart15 then
+    return
+  end
+
+  local TFKWhitelistTag = Instance.new("BillboardGui")
+  TFKWhitelistTag.Name = "TFKWhitelistTag"
+  TFKWhitelistTag.Size = UDim2.fromOffset(120, 26)
+  TFKWhitelistTag.StudsOffset = Vector3.new(0, 3.4, 0)
+  TFKWhitelistTag.AlwaysOnTop = true
+  TFKWhitelistTag.Adornee = humanoidRootPart15
+  TFKWhitelistTag.Parent = humanoidRootPart15
+
+  local textLabel8 = Instance.new("TextLabel")
+  textLabel8.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+  textLabel8.BackgroundTransparency = 0.15
+  textLabel8.BorderSizePixel = 0
+  textLabel8.Size = UDim2.fromScale(1, 1)
+  textLabel8.Font = Enum.Font.GothamBold
+  textLabel8.Text = "WHITELISTED"
+  textLabel8.TextColor3 = Color3.fromRGB(255, 182, 193)
+  textLabel8.TextScaled = true
+  textLabel8.Parent = TFKWhitelistTag
+
+  local uiCorner5 = Instance.new("UICorner")
+  uiCorner5.CornerRadius = UDim.new(0, 6)
+  uiCorner5.Parent = textLabel8
+
+  local uiStroke2 = Instance.new("UIStroke")
+  uiStroke2.Color = Color3.fromRGB(255, 182, 193)
+  uiStroke2.Thickness = 1.25
+  uiStroke2.Parent = textLabel8
+
+  v43[player2] = TFKWhitelistTag
+end
+
+renderStepped:Connect(function()
+  if not flag8 then
+    return
+  end
+
+  local v52, huge3 = f38()
+
+  if not (localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart"))
+    or not v52 or not f28(v52) or huge3 > range then
+    if v50 then
+      f35()
+      f31()
+      f27()
+    end
+
+    return
+  end
+
+  if v50 ~= v52 then
+    f35()
+    v50 = v52
+  end
+
+  f32(v52)
+
+  if v45 then
+    f34()
+  else
+    f31()
+  end
+
+  f30()
+end)
+
+local function getGsub(p20)
+  return tostring(p20 or ""):lower():gsub("%s+", "")
+end
+
+function f37(p21)
+  if not p21 then
+    return false
+  end
+
+  local gsub = getGsub(p21.Name)
+  local gsub2 = getGsub(p21.DisplayName)
+
+  for _, value50 in ipairs(list4) do
+    local gsub3 = getGsub(value50)
+
+    if gsub3 ~= "" and (gsub == gsub3 or gsub2 == gsub3) then
+      return true
+    end
+  end
+
+  return false
+end
+
+function f39(key9)
+  local instance7 = v43[key9]
+
+  if instance7 then
+    pcall(function() instance7:Destroy() end)
+    v43[key9] = nil
+  end
+end
+
+local function f40()
+  for _, value51 in ipairs(players:GetPlayers()) do
+    makeTextLabel7(value51)
+  end
+end
+
+killAuraTab:CreateSection("Kill Aura")
+
+killAuraTab:CreateToggle({
+  Name = "PC Aura: OFF / ON",
+  CurrentValue = false,
+  Callback = function(value52)
+    if value52 then
+      flag8 = true
+      f3("PC Aura", "Enabled. Whitelisted players are ignored.", 4)
+    else
+      f36()
+      f3("PC Aura", "Disabled; temporary hitbox changes were restored.", 3)
+    end
+  end,
+})
+
+killAuraTab:CreateSlider({
+  Name = "CPS (clicks per second)",
+  Range = { 1, 20 },
+  Increment = 1,
+  Suffix = " CPS",
+  CurrentValue = clamped3,
+  Callback = function(value53) clamped3 = math.clamp(value53, 1, 30) end,
+})
+
+killAuraTab:CreateSlider({
+  Name = "Range",
+  Range = { 5, 20 },
+  Increment = 1,
+  Suffix = " studs",
+  CurrentValue = range,
+  Callback = function(value54) range = value54 end,
+})
+
+killAuraTab:CreateSlider({
+  Name = "Hitbox Size",
+  Range = { 2, 35 },
+  Increment = 1,
+  Suffix = " studs",
+  CurrentValue = hitboxSize,
+  Callback = function(value55) hitboxSize = value55 end,
+})
+
+killAuraTab:CreateSlider({
+  Name = "Hitbox Visibility",
+  Range = { 0, 1 },
+  Increment = 0.1,
+  Suffix = " transparency",
+  CurrentValue = hitboxVisibility,
+  Callback = function(value56) hitboxVisibility = value56 end,
+})
+
+killAuraTab:CreateToggle({
+  Name = "No Hit Anims",
+  CurrentValue = true,
+  Callback = function(value57)
+    v45 = value57
+
+    if flag8 then
+      if value57 then
+        f34()
+      else
+        f31()
+      end
+    end
+  end,
+})
+
+killAuraTab:CreateParagraph({
+  Title = "PC Aura Settings",
+  Content = "PC Aura uses the CPS, Range, Hitbox Size, Visibility and No Hit Anims settings above. The whitelist is checked before selecting a target.",
+})
+
+killAuraTab:CreateSection("Whitelist")
+
+killAuraTab:CreateParagraph({
+  Title = "Protected Players",
+  Content = "Add exact Roblox usernames or display names. Whitelisted players are marked with a visible label.",
+})
+
+killAuraTab:CreateInput({
+  Name = "Username / Display Name",
+  PlaceholderText = "Enter exact player name",
+  RemoveTextAfterFocusLost = false,
+  Callback = function(value58) text10 = tostring(value58 or "") end,
+})
+
+killAuraTab:CreateButton({
+  Name = "Add to Whitelist",
+  Callback = function()
+    local gsub4 = text10:gsub("^%s+", ""):gsub("%s+$", "")
+
+    if gsub4 == "" then
+      f3("Kill Aura Whitelist", "Enter a username first.", 3)
+      return
+    end
+
+    for _, value59 in ipairs(list4) do
+      if getGsub(value59) == getGsub(gsub4) then
+        f3("Kill Aura Whitelist", "That name is already whitelisted.", 3)
+        return
+      end
+    end
+
+    table.insert(list4, gsub4)
+    f40()
+    f3("Kill Aura Whitelist", "Added " .. gsub4 .. ". Whitelist is empty.", 4)
+  end,
+})
+
+killAuraTab:CreateButton({
+  Name = "Remove from Whitelist",
+  Callback = function()
+    local gsub5 = getGsub(text10)
+
+    if gsub5 == "" then
+      f3("Kill Aura Whitelist", "Enter the name to remove.", 3)
+      return
+    end
+
+    for i10 = #list4, 1, -1 do
+      if getGsub(list4[i10]) == gsub5 then
+        table.remove(list4, i10)
+      end
+    end
+
+    f40()
+    f3("Kill Aura Whitelist", "Updated. Whitelist is empty.", 4)
+  end,
+})
+
+killAuraTab:CreateToggle({
+  Name = "Show Whitelist Tags",
+  CurrentValue = true,
+  Callback = function(value60)
+    v44 = value60
+    f40()
+  end,
+})
+
+killAuraTab:CreateButton({
+  Name = "Refresh Whitelist Tags",
+  Callback = function()
+    f40()
+    f3("Kill Aura Whitelist", "Whitelist is empty.", 4)
+  end,
+})
+
+players.PlayerAdded:Connect(function(player3)
+  player3.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    makeTextLabel7(player3)
+  end)
+
+  task.defer(function() makeTextLabel7(player3) end)
+end)
+
+players.PlayerRemoving:Connect(function(player4)
+  f39(player4)
+  f29(player4)
+
+  if v50 == player4 then
+    f35()
+    f27()
+  end
+end)
+
+for _, value61 in ipairs(players:GetPlayers()) do
+  value61.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    makeTextLabel7(value61)
+  end)
+end
+
+local function makeTextButton2()
+  local localPlayer5 = players.LocalPlayer
+  local playerGui = localPlayer5:WaitForChild("PlayerGui")
+
+  local list5 = {
+    {
+      "Astronaut", "891621366", "891633237", "891636393", "891636393", "891627522", "891617961",
+      "891609353", "891639666", "891663592",
+    },
+    {
+      "Bubbly", "910004836", "910009958", "910034870", "910025107", "910016857", "910001910",
+      "909997997", "910028158", "910030921",
+    },
+    {
+      "Cartoony", "742637151", "742638445", "742640026", "742638842", "742637942", "742637544",
+      "742636889", "742639220", "742639812",
+    },
+    {
+      "Elder", "845398858", "845400520", "845403856", "845386501", "845403127", "845397899",
+      "845392038", "845396048", "845401742",
+    },
+    {
+      "Knight", "657557095", "657568135", "657552124", "657564596", "658409194", "657595757",
+      "658360781", "657600338", "657560551",
+    },
+    {
+      "Levitation", "616006778", "616008087", "616013216", "616010382", "616008936",
+      "616005863", "616003713", "616011509", "616012453",
+    },
+    {
+      "Mage", "707853694", "707855907", "707897309", "707861613", "707894699", "707742142",
+      "707826056", "707829716", "707876443",
+    },
+    {
+      "Ninja", "656117400", "656118341", "656121766", "656118852", "656117878", "656115606",
+      "656114359", "656119721", "656121397",
+    },
+    {
+      "Pirate", "750782230", "750782770", "750785693", "750783738", "750781874", "750780242",
+      "750779899", "750784579", "750785176",
+    },
+    {
+      "Robot", "616088211", "616089559", "616095330", "616091570", "616090535", "616087089",
+      "616086039", "616092998", "616094091",
+    },
+    {
+      "Rthro", "2510197830", "2510197257", "2510202577", "2510198475", "2510201162",
+      "2510195892", "2510192778", "2510199791", "2510196951",
+    },
+    {
+      "Stylish", "616139451", "616138447", "616146177", "616140816", "616136790", "616134815",
+      "616133594", "616143378", "616144772",
+    },
+    {
+      "Superhero", "616115533", "616113536", "616122287", "616117076", "616111295", "616108001",
+      "616104706", "616119360", "616120861",
+    },
+    {
+      "Toy", "782847020", "782845736", "782843345", "782842708", "782841498", "782846423",
+      "782843869", "782844582", "782845186",
+    },
+    {
+      "Vampire", "1083455352", "1083450166", "1083473930", "1083462077", "1083445855",
+      "1083443587", "1083439238", "1083464683", "1083467779",
+    },
+    {
+      "Werewolf", "1083218792", "1083214717", "1083178339", "1083216690", "1083195517",
+      "1083189019", "1083182000", "1083222527", "1083225406",
+    },
+    {
+      "Zombie", "616161997", "616160636", "616168032", "616163682", "616158929", "616157476",
+      "616156119", "616165109", "616166655",
+    },
+  }
+
+  local animationHub = playerGui:FindFirstChild("AnimationHub")
+
+  if animationHub then
+    animationHub:Destroy()
+  end
+
+  local animationHub2 = Instance.new("ScreenGui")
+  animationHub2.Name = "AnimationHub"
+  animationHub2.ResetOnSpawn = false
+  animationHub2.DisplayOrder = 20
+  animationHub2.Parent = playerGui
+
+  local frame7 = Instance.new("Frame")
+  frame7.Size = UDim2.fromOffset(290, 390)
+  frame7.Position = UDim2.new(0.5, -145, 0.5, -195)
+  frame7.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+  frame7.BorderSizePixel = 0
+  frame7.Parent = animationHub2
+
+  Instance.new("UICorner", frame7).CornerRadius = UDim.new(0, 10)
+  Instance.new("UIStroke", frame7).Color = Color3.fromRGB(120, 95, 200)
+
+  local frame8 = Instance.new("Frame")
+  frame8.Size = UDim2.new(1, 0, 0, 42)
+  frame8.BackgroundColor3 = Color3.fromRGB(36, 31, 49)
+  frame8.BorderSizePixel = 0
+  frame8.Active = true
+  frame8.Parent = frame7
+
+  Instance.new("UICorner", frame8).CornerRadius = UDim.new(0, 10)
+
+  local textLabel9 = Instance.new("TextLabel")
+  textLabel9.Size = UDim2.new(1, -48, 1, 0)
+  textLabel9.Position = UDim2.fromOffset(12, 0)
+  textLabel9.BackgroundTransparency = 1
+  textLabel9.Text = "ANIMATION CHANGER"
+  textLabel9.TextColor3 = Color3.fromRGB(225, 218, 255)
+  textLabel9.Font = Enum.Font.GothamBold
+  textLabel9.TextSize = 14
+  textLabel9.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel9.Parent = frame8
+
+  local textButton3 = Instance.new("TextButton")
+  textButton3.Size = UDim2.fromOffset(30, 28)
+  textButton3.Position = UDim2.new(1, -36, 0, 7)
+  textButton3.BackgroundColor3 = Color3.fromRGB(85, 49, 65)
+  textButton3.Text = "X"
+  textButton3.TextColor3 = Color3.new(1, 1, 1)
+  textButton3.Font = Enum.Font.GothamBold
+  textButton3.TextSize = 14
+  textButton3.Parent = frame8
+
+  Instance.new("UICorner", textButton3).CornerRadius = UDim.new(0, 6)
+  textButton3.Activated:Connect(function() animationHub2:Destroy() end)
+
+  local textBox2 = Instance.new("TextBox")
+  textBox2.Position = UDim2.fromOffset(10, 52)
+  textBox2.Size = UDim2.new(1, -20, 0, 34)
+  textBox2.BackgroundColor3 = Color3.fromRGB(39, 39, 52)
+  textBox2.BorderSizePixel = 0
+  textBox2.PlaceholderText = "Search animation packs..."
+  textBox2.PlaceholderColor3 = Color3.fromRGB(155, 155, 175)
+  textBox2.Text = ""
+  textBox2.TextColor3 = Color3.new(1, 1, 1)
+  textBox2.Font = Enum.Font.Gotham
+  textBox2.TextSize = 12
+  textBox2.ClearTextOnFocus = false
+  textBox2.Parent = frame7
+
+  Instance.new("UICorner", textBox2).CornerRadius = UDim.new(0, 7)
+
+  local scrollingFrame7 = Instance.new("ScrollingFrame")
+  scrollingFrame7.Position = UDim2.fromOffset(10, 96)
+  scrollingFrame7.Size = UDim2.new(1, -20, 1, -132)
+  scrollingFrame7.BackgroundTransparency = 1
+  scrollingFrame7.BorderSizePixel = 0
+  scrollingFrame7.ScrollBarThickness = 3
+  scrollingFrame7.AutomaticCanvasSize = Enum.AutomaticSize.Y
+  scrollingFrame7.CanvasSize = UDim2.new()
+  scrollingFrame7.Parent = frame7
+
+  local uiListLayout = Instance.new("UIListLayout")
+  uiListLayout.Padding = UDim.new(0, 6)
+  uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+  uiListLayout.Parent = scrollingFrame7
+
+  local textLabel10 = Instance.new("TextLabel")
+  textLabel10.Position = UDim2.new(0, 10, 1, -29)
+  textLabel10.Size = UDim2.new(1, -20, 0, 19)
+  textLabel10.BackgroundTransparency = 1
+  textLabel10.Text = #list5 .. " animation packs"
+  textLabel10.TextColor3 = Color3.fromRGB(175, 175, 195)
+  textLabel10.Font = Enum.Font.Gotham
+  textLabel10.TextSize = 11
+  textLabel10.TextXAlignment = Enum.TextXAlignment.Left
+  textLabel10.Parent = frame7
+
+  local function getFindFirstChild(animate, list6)
+    local findFirstChild2 = animate
+
+    for _, value62 in ipairs(list6) do
+      findFirstChild2 = findFirstChild2:FindFirstChild(value62)
+
+      if not findFirstChild2 then
+        return nil
+      end
+    end
+
+    if findFirstChild2:IsA("Animation") then
+      return findFirstChild2
+    end
+
+    return nil
+  end
+
+  local map5 = {
+    [4] = { "walk", "WalkAnim" },
+    [5] = { "run", "RunAnim" },
+    [6] = { "jump", "JumpAnim" },
+    [7] = { "fall", "FallAnim" },
+    [8] = { "climb", "ClimbAnim" },
+    [9] = { "swim", "Swim" },
+    [10] = { "swimidle", "SwimIdle" },
+  }
+
+  local function f41(text11)
+    local character9 = localPlayer5.Character
+
+    if not character9 then
+      textLabel10.Text = "Character not loaded"
+      return
+    end
+
+    local humanoid8 = character9:FindFirstChildOfClass("Humanoid")
+    local v53 = not humanoid8
+    local animate2 = character9:FindFirstChild("Animate")
+
+    if v53 or not animate2 then
+      textLabel10.Text = "Animate script not found"
+      return
+    end
+
+    if humanoid8.RigType ~= Enum.HumanoidRigType.R15 then
+      textLabel10.Text = "R15 avatar required"
+      return
+    end
+
+    local animator2 = humanoid8:FindFirstChildOfClass("Animator")
+
+    if animator2 then
+      for _, value63 in ipairs(animator2:GetPlayingAnimationTracks()) do
+        value63:Stop(0)
+      end
+    end
+
+    local count = 0
+    local idle = animate2:FindFirstChild("idle")
+
+    if idle then
+      local animation1 = idle:FindFirstChild("Animation1")
+      local animation2 = idle:FindFirstChild("Animation2")
+
+      if animation1 and animation1:IsA("Animation") then
+        animation1.AnimationId = "rbxassetid://" .. text11[2]
+        count = count + 1
+      end
+
+      if animation2 and animation2:IsA("Animation") then
+        animation2.AnimationId = "rbxassetid://" .. text11[3]
+        count = count + 1
+      end
+    end
+
+    for key10, value64 in pairs(map5) do
+      local findFirstChild3 = getFindFirstChild(animate2, value64)
+
+      if findFirstChild3 then
+        findFirstChild3.AnimationId = "rbxassetid://" .. text11[key10]
+        count = count + 1
+      end
+    end
+
+    local enabled = animate2.Enabled
+    animate2.Enabled = false
+    task.wait(0.15)
+
+    if animate2.Parent then
+      animate2.Enabled = enabled
+    end
+
+    textLabel10.Text = text11[1] .. " applied (" .. count .. " slots)"
+  end
+
+  local v54 = {}
+
+  for index, value65 in ipairs(list5) do
+    local frame9 = Instance.new("Frame")
+    frame9.Name = value65[1]
+    frame9.Size = UDim2.new(1, -4, 0, 52)
+    frame9.BackgroundColor3 = Color3.fromRGB(35, 35, 48)
+    frame9.BorderSizePixel = 0
+    frame9.LayoutOrder = index
+    frame9.Parent = scrollingFrame7
+
+    Instance.new("UICorner", frame9).CornerRadius = UDim.new(0, 7)
+
+    local textLabel11 = Instance.new("TextLabel")
+    textLabel11.Position = UDim2.fromOffset(10, 0)
+    textLabel11.Size = UDim2.new(1, -88, 1, 0)
+    textLabel11.BackgroundTransparency = 1
+    textLabel11.Text = value65[1]
+    textLabel11.TextColor3 = Color3.fromRGB(240, 238, 255)
+    textLabel11.Font = Enum.Font.GothamBold
+    textLabel11.TextSize = 13
+    textLabel11.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel11.Parent = frame9
+
+    local textButton4 = Instance.new("TextButton")
+    textButton4.Size = UDim2.fromOffset(64, 29)
+    textButton4.Position = UDim2.new(1, -72, 0.5, -14)
+    textButton4.BackgroundColor3 = Color3.fromRGB(105, 83, 190)
+    textButton4.Text = "Apply"
+    textButton4.TextColor3 = Color3.new(1, 1, 1)
+    textButton4.Font = Enum.Font.GothamBold
+    textButton4.TextSize = 12
+    textButton4.Parent = frame9
+
+    Instance.new("UICorner", textButton4).CornerRadius = UDim.new(0, 6)
+    textButton4.Activated:Connect(function() f41(value65) end)
+    v54[index] = frame9
+  end
+
+  textBox2:GetPropertyChangedSignal("Text"):Connect(function()
+    local lower6 = string.lower(textBox2.Text)
+    local count2 = 0
+
+    for index2, value66 in ipairs(list5) do
+      local visible = string.find(string.lower(value66[1]), lower6, 1, true) ~= nil
+      v54[index2].Visible = visible
+
+      if visible then
+        count2 = count2 + 1
+      end
+    end
+
+    textLabel10.Text = count2 .. " packs found"
+  end)
+
+  local flag10 = false
+  local position3, position4
+
+  frame8.InputBegan:Connect(function(input2)
+    if input2.UserInputType == Enum.UserInputType.MouseButton1
+      or input2.UserInputType == Enum.UserInputType.Touch then
+      flag10 = true
+      position3 = input2.Position
+      position4 = frame7.Position
+
+      input2.Changed:Connect(function()
+        if input2.UserInputState == Enum.UserInputState.End then
+          flag10 = false
+        end
+      end)
+    end
+  end)
+
+  local connect3
+
+  connect3 = userInputService.InputChanged:Connect(function(input3)
+    if not animationHub2.Parent then
+      if connect3 then
+        connect3:Disconnect()
+      end
+
+      return
+    end
+
+    if flag10
+      and (input3.UserInputType == Enum.UserInputType.MouseMovement
+        or input3.UserInputType == Enum.UserInputType.Touch) then
+      local v55 = input3.Position - position3
+
+      frame7.Position = UDim2.new(
+        position4.X.Scale, position4.X.Offset + v55.X, position4.Y.Scale,
+        position4.Y.Offset + v55.Y
+      )
+    end
+  end)
+
+  animationHub2.Destroying:Connect(function()
+    if connect3 then
+      connect3:Disconnect()
+    end
+  end)
+
+  print("Animation Changer GUI loaded")
+end
+
+local flag11 = true
+local map6 = {}
+local instance8, connect4, connect5, connect6
+
+local function makeTextButton3()
+  if instance8 and instance8.Parent then
+    instance8.Enabled = true
+    local mainFrame2 = instance8:FindFirstChild("MainFrame")
+
+    if mainFrame2 then
+      mainFrame2.Visible = true
+    end
+
+    return
+  end
+
+  local TFKHitBack = Instance.new("ScreenGui")
+  TFKHitBack.Name = "TFKHitBack"
+  TFKHitBack.ResetOnSpawn = false
+  TFKHitBack.DisplayOrder = 20
+  TFKHitBack.Parent = localPlayer:WaitForChild("PlayerGui")
+
+  instance8 = TFKHitBack
+
+  local mainFrame3 = Instance.new("Frame")
+  mainFrame3.Name = "MainFrame"
+  mainFrame3.Size = UDim2.fromOffset(290, 285)
+  mainFrame3.Position = UDim2.new(0, 25, 0.35, 0)
+  mainFrame3.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
+  mainFrame3.BorderSizePixel = 0
+  mainFrame3.Active = true
+  mainFrame3.Draggable = true
+  mainFrame3.Parent = TFKHitBack
+
+  Instance.new("UICorner", mainFrame3).CornerRadius = UDim.new(0, 10)
+
+  local uiStroke3 = Instance.new("UIStroke")
+  uiStroke3.Color = Color3.fromRGB(190, 120, 255)
+  uiStroke3.Thickness = 1.5
+  uiStroke3.Parent = mainFrame3
+
+  local function makeTextLabel8(text12, p22, p23)
+    local textLabel12 = Instance.new("TextLabel")
+    textLabel12.Position = UDim2.fromOffset(12, p22)
+    textLabel12.Size = UDim2.new(1, -24, 0, p23)
+    textLabel12.BackgroundTransparency = 1
+    textLabel12.Text = text12
+    textLabel12.TextColor3 = Color3.new(1, 1, 1)
+    textLabel12.TextSize = 13
+    textLabel12.Font = Enum.Font.GothamBold
+    textLabel12.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel12.TextWrapped = true
+    textLabel12.Parent = mainFrame3
+
+    return textLabel12
+  end
+
+  local function makeTextButton4(text13, p24)
+    local textButton5 = Instance.new("TextButton")
+    textButton5.Position = UDim2.fromOffset(12, p24)
+    textButton5.Size = UDim2.new(1, -24, 0, 32)
+    textButton5.BackgroundColor3 = Color3.fromRGB(43, 43, 55)
+    textButton5.TextColor3 = Color3.new(1, 1, 1)
+    textButton5.Text = text13
+    textButton5.TextSize = 12
+    textButton5.Font = Enum.Font.GothamBold
+    textButton5.Parent = mainFrame3
+
+    Instance.new("UICorner", textButton5).CornerRadius = UDim.new(0, 6)
+    return textButton5
+  end
+
+  makeTextLabel8("TFK HUB | HITBACK", 10, 25)
+  local textLabel13 = makeTextLabel8("Status: ON", 40, 20)
+  local textLabel14 = makeTextLabel8("Health: --", 62, 20)
+  local textLabel15 = makeTextLabel8("Damage monitor: READY", 84, 20)
+  local textButton6 = makeTextButton4("HitBack Monitor: ON / OFF", 112)
+
+  local textBox3 = Instance.new("TextBox")
+  textBox3.Position = UDim2.fromOffset(12, 153)
+  textBox3.Size = UDim2.new(1, -24, 0, 30)
+  textBox3.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+  textBox3.TextColor3 = Color3.new(1, 1, 1)
+  textBox3.PlaceholderText = "Username oder Displayname"
+  textBox3.Text = ""
+  textBox3.TextSize = 12
+  textBox3.Font = Enum.Font.Gotham
+  textBox3.ClearTextOnFocus = false
+  textBox3.Parent = mainFrame3
+
+  Instance.new("UICorner", textBox3).CornerRadius = UDim.new(0, 6)
+  local textButton7 = makeTextButton4("Whitelist hinzufügen", 191)
+  local textButton8 = makeTextButton4("Whitelist entfernen", 229)
+  local textLabel16 = makeTextLabel8("Whitelist: leer", 263, 18)
+
+  local function f42(text14)
+    local lower7 = string.lower(text14 or "")
+
+    for _, value67 in ipairs(players:GetPlayers()) do
+      if string.lower(value67.Name) == lower7 or string.lower(value67.DisplayName) == lower7 then
+        return value67
+      end
+    end
+
+    return nil
+  end
+
+  local function f43()
+    local list7 = {}
+
+    for _, value68 in pairs(map6) do
+      table.insert(list7, value68)
+    end
+
+    table.sort(list7)
+
+    textLabel16.Text = #list7 > 0 and "Whitelist: " .. table.concat(list7, ", ")
+      or "Whitelist: leer"
+  end
+
+  textButton7.Activated:Connect(function()
+    local v56 = f42(textBox3.Text)
+
+    if not v56 then
+      textLabel13.Text = "Spieler nicht gefunden"
+      return
+    end
+
+    map6[v56.UserId] = v56.Name
+    f43()
+    textLabel13.Text = v56.Name .. " hinzugefügt"
+  end)
+
+  textButton8.Activated:Connect(function()
+    local v57 = f42(textBox3.Text)
+
+    if not v57 then
+      textLabel13.Text = "Spieler nicht gefunden"
+      return
+    end
+
+    map6[v57.UserId] = nil
+    f43()
+    textLabel13.Text = v57.Name .. " entfernt"
+  end)
+
+  local function f44(instance9)
+    if connect4 then
+      connect4:Disconnect()
+      connect4 = nil
+    end
+
+    local humanoid9 = instance9:WaitForChild("Humanoid")
+    local health2 = humanoid9.Health
+    textLabel14.Text = "Health: " .. math.floor(health2)
+
+    connect4 = humanoid9.HealthChanged:Connect(function(text15)
+      local v58 = text15 < health2
+      health2 = text15
+      textLabel14.Text = "Health: " .. math.floor(text15)
+
+      if v58 and flag11 then
+        textLabel15.Text = "Damage detected"
+        textLabel13.Text = "Status: Damage detected"
+      end
+    end)
+  end
+
+  if localPlayer.Character then
+    task.spawn(f44, localPlayer.Character)
+  end
+
+  if connect5 then
+    connect5:Disconnect()
+  end
+
+  connect5 = localPlayer.CharacterAdded:Connect(f44)
+
+  textButton6.Activated:Connect(function()
+    flag11 = not flag11
+    textButton6.Text = flag11 and "HitBack Monitor: ON / OFF" or "HitBack Monitor: OFF / ON"
+    textLabel13.Text = flag11 and "Status: ON" or "Status: OFF"
+
+    if not flag11 then
+      textLabel15.Text = "Damage monitor: PAUSED"
+    end
+  end)
+
+  connect6 = userInputService.InputBegan:Connect(function(input4, p25)
+    if not p25 and input4.KeyCode == Enum.KeyCode.RightShift and TFKHitBack.Parent then
+      mainFrame3.Visible = not mainFrame3.Visible
+    end
+  end)
+
+  TFKHitBack.Destroying:Connect(function()
+    if connect4 then
+      connect4:Disconnect()
+      connect4 = nil
+    end
+
+    if connect5 then
+      connect5:Disconnect()
+      connect5 = nil
+    end
+
+    if connect6 then
+      connect6:Disconnect()
+      connect6 = nil
+    end
+  end)
+
+  print("TFK HUB HitBack GUI opened")
+end
+
+local tab4 = window:CreateTab("Animation Changer and Hitback", "person-standing")
+tab4:CreateSection("Animation Packs")
+
+tab4:CreateButton({
+  Name = "Open Animation Changer GUI",
+  Callback = function()
+    local ok5, result5 = pcall(makeTextButton2)
+
+    if not ok5 then
+      warn("TFK HUB Animation Changer GUI failed:", result5)
+
+      result2:Notify({
+        Title = "Animation Changer",
+        Content = "Could not open the GUI. Check the console for details.",
+        Duration = 4,
+      })
+    end
+  end,
+})
+
+tab4:CreateSection("HitBack")
+
+tab4:CreateButton({
+  Name = "Open HitBack GUI",
+  Callback = function()
+    local ok6, result6 = pcall(makeTextButton3)
+
+    if not ok6 then
+      warn("[TFK HUB] HitBack GUI failed:", result6)
+
+      result2:Notify({
+        Title = "HitBack GUI",
+        Content = "Could not open the GUI. Check the console for details.",
+        Duration = 4,
+      })
+    end
+  end,
+})
+
+task.defer(function()
+  local flag12 = false
+
+  pcall(function()
+    local textChannels = textChatService:FindFirstChild("TextChannels")
+    local rbxGeneral = textChannels and textChannels:FindFirstChild("RBXGeneral")
+
+    if rbxGeneral then
+      rbxGeneral:SendAsync("➡️- LOADING TFK HUB/PAZZY -⬅️ ")
+      flag12 = true
+    end
+  end)
+
+  if not flag12 then
+    pcall(function()
+      local defaultChatSystemChatEvents = replicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+
+      local sayMessageRequest = defaultChatSystemChatEvents
+        and defaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
+
+      if sayMessageRequest then
+        sayMessageRequest:FireServer("-> Loading RNG Script V 2 <-", "All")
+        flag12 = true
+      end
+    end)
+  end
+
+  if not flag12 then
+    warn("[TFK HUB Could not send startup message: chat channel unavailable.")
+  end
+end)
+
+result2:Notify({
+  Title = "Loaded TFK HUB",
+  Content = "HUB V3 loaded. Press K to toggle the UI. Freeze tab includes local freeze controls.",
+  Duration = 6,
+  Image = 4579527842,
+})
+
+print("TFK HUB V3 loaded.")
